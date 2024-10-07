@@ -1,15 +1,17 @@
 from django.db import models
+from django.core.exceptions import ValidationError
 from django.contrib.auth.models import AbstractUser
-from .validators import username_validator
+from .validators import username_regex_validator
 
 
 class User(AbstractUser):
     email = models.EmailField('Электронная почта', max_length=254, unique=True)
     username = models.CharField('Имя пользователя', max_length=150,
-                                validators=(username_validator, ),)
+                                validators=(username_regex_validator, ),
+                                unique=True)
     first_name = models.CharField('Имя', max_length=150)
     last_name = models.CharField('Фамилия', max_length=150)
-    is_subscribed = models.BooleanField('Подписка', blank=True, null=True)
+    is_subscribed = models.BooleanField('Подписка', blank=True, null=True, default=False)
     avatar = models.ImageField('Фото профиля', blank=True, null=True)
 
     USERNAME_FIELD = 'email'

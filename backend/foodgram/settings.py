@@ -18,9 +18,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'rest_framework.authtoken',
     'djoser',
-    'foodgram',
+    'rest_framework.authtoken',
     'users',
 ]
 
@@ -85,17 +84,26 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+    ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
-        'rest_framework.authentication.BasicAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
-    ]
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'users.pagination.UsersPagination',
+    'PAGE_SIZE': 6,
 }
 
 DJOSER = {
     'LOGIN_FIELD': 'email',
     'PERMISSIONS': {
-        'user_list': ('rest_framework.permissions.AllowAny')
+        'user_list': ['rest_framework.permissions.AllowAny',],
+        'user': ['rest_framework.permissions.AllowAny',],
+    },
+    'SERIALIZERS': {
+        'user_create': 'users.serializers.UserCreatesSerializer',
+        'user': 'users.serializers.UserListSerializer',
+        'current_user': 'users.serializers.UserListSerializer',
     },
     'HIDE_USERS': False,
 }
