@@ -1,25 +1,32 @@
 from django.contrib.auth import get_user_model
-from rest_framework import viewsets, status
-from rest_framework.decorators import action
+from rest_framework.views import APIView
+from .serializers import AvatarSerializer
 from rest_framework.response import Response
-from rest_framework import permissions
-from .pagination import UsersPagination
-from .serializers import UserListSerializer, UserCreateSerializer
-from rest_framework.permissions import SAFE_METHODS
-from djoser.views import UserViewSet
-from djoser.permissions import CurrentUserOrAdmin
+from rest_framework.permissions import IsAuthenticated
+from rest_framework import status
+from django.contrib.auth.decorators import login_required
+
+
 User = get_user_model()
 
 
-class UsersMeViewSet(UserViewSet):
-    queryset = User.objects.all()
-    serializer_class = UserListSerializer
-    http_method_names = ('get',)
-    permission_classes = (permissions.IsAuthenticated, )
+class AvatarPutDeleteView(APIView):
+    permission_classes = (IsAuthenticated, )
 
-    @action(methods=['GET',], detail=False,
-            permission_classes=[permissions.IsAuthenticated])
-    def me(self, request):
-        if request.method == 'GET':
-            serializer = UserListSerializer(request.user)
+    def put(self, request):
+        user = User.objects.get(username=request.user)
+        serializer = AvatarSerializer(user, data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request):
+        user = User.objects.get(username=request.user)
+        if user.avatar:
+            user.avatar.delete(save=False)
+            user.avatar = None
+            user.save()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response('Аватар отсутствует',
+                        status=status.HTTP_400_BAD_REQUEST)

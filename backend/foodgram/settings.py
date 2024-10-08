@@ -85,7 +85,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+        'rest_framework.permissions.IsAuthenticated',
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
@@ -98,12 +98,12 @@ DJOSER = {
     'LOGIN_FIELD': 'email',
     'PERMISSIONS': {
         'user_list': ['rest_framework.permissions.AllowAny',],
-        'user': ['rest_framework.permissions.AllowAny',],
+        'user': ['rest_framework.permissions.IsAuthenticatedOrReadOnly',],
     },
     'SERIALIZERS': {
         'user_create': 'users.serializers.UserCreatesSerializer',
         'user': 'users.serializers.UserListSerializer',
-        'current_user': 'users.serializers.UserListSerializer',
+        'current_user': 'users.serializers.UserMeSerializer',
     },
     'HIDE_USERS': False,
 }
@@ -118,9 +118,8 @@ USE_L10N = True
 
 USE_TZ = True
 
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/3.2/howto/static-files/
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 STATIC_URL = '/static/'
 

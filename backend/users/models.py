@@ -11,8 +11,10 @@ class User(AbstractUser):
                                 unique=True)
     first_name = models.CharField('Имя', max_length=150)
     last_name = models.CharField('Фамилия', max_length=150)
-    is_subscribed = models.BooleanField('Подписка', blank=True, null=True, default=False)
-    avatar = models.ImageField('Фото профиля', blank=True, null=True)
+    is_subscribed = models.BooleanField('Подписка', blank=True,
+                                        null=True, default=False)
+    avatar = models.ImageField('Фото профиля', blank=True,
+                               null=True, upload_to='users/avatars/')
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ('username', 'first_name', 'last_name', 'password')
