@@ -17,6 +17,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_filters',
     'rest_framework',
     'djoser',
     'rest_framework.authtoken',
@@ -85,6 +86,9 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
     ],
     'DEFAULT_PAGINATION_CLASS': 'api.pagination.UsersPagination',
+    'DEFAULT.FILTER.BACKENDS': (
+        'django_filters.rest_framework.DjangoFilterBackend'
+    ),
 }
 
 DJOSER = {
