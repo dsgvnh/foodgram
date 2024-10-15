@@ -29,6 +29,7 @@ class RecipViewSet(ModelViewSet):
     model = Recipes
     queryset = Recipes.objects.all()
     serializer_class = RecipSerializer
+    http_method_names = ['get', 'post', 'patch']
     permission_classes = (IsAuthenticatedOrReadOnly,)
 
     def perform_create(self, serializer):

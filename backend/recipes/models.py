@@ -15,11 +15,11 @@ class Tag(models.Model):
         verbose_name, verbose_name_plural = 'Тег', 'Теги'
 
     def __str__(self) -> str:
-        return self.name
+        return (f'{self.name} {self.slug}')
 
 
 class Ingredient(models.Model):
-    name = models.CharField('Название', max_length=128, blank=False)
+    name = models.CharField('Название', max_length=128, blank=False, unique=True)
     measurement_unit = models.CharField('Ед. измерения', max_length=64,
                                         blank=False)
 
@@ -27,7 +27,7 @@ class Ingredient(models.Model):
         verbose_name, verbose_name_plural = 'Ингредиент', 'Ингредиенты'
 
     def __str__(self) -> str:
-        return self.name
+        return (f'{self.name} {self.measurement_unit}')
 
 
 class Recipes(models.Model):
@@ -36,7 +36,7 @@ class Recipes(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE,
                                related_name='recipes',
                                verbose_name='Автор',)
-    ingredients = models.ManyToManyField(Ingredient, related_name='recipes',
+    ingredients = models.ManyToManyField(Ingredient, through='RecipesIngredient', related_name='recipes',
                                          verbose_name='Ингредиенты')
     name = models.CharField('Название', max_length=256, blank=False)
     image = models.ImageField('Картинка', upload_to='recipes/images/',
@@ -51,3 +51,19 @@ class Recipes(models.Model):
 
     def __str__(self) -> str:
         return self.name
+
+
+class RecipesIngredient(models.Model):
+    recipe = models.ForeignKey(Recipes, on_delete=models.CASCADE, related_name='recipeingredients', verbose_name='рецепт')
+    ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE, related_name='recipeingredients', verbose_name='ингредиент')
+    amount = models.SmallIntegerField('Количество', validators=(MinValueValidator(1, 'Минимальное значение - 1'), ))
+
+    class Meta:
+        verbose_name = 'Ингредиенты в рецепте'
+        verbose_name_plural = 'Ингредиенты в рецептах'
+
+    def __str__(self):
+        return (f'{self.recipe.name}: '
+                f'{self.ingredient.name} - '
+                f'{self.amount} '
+                f'{self.ingredient.measurement_unit}')
