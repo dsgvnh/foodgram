@@ -23,7 +23,7 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 class RecipIngredientSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField()
-    amount = serializers.IntegerField()
+    amount = serializers.IntegerField(default=0)
 
     class Meta:
         model = RecipesIngredient
@@ -38,8 +38,8 @@ class RecipIngredientSerializer(serializers.ModelSerializer):
 class RecipSerializer(serializers.ModelSerializer):
     author = UserListSerializer(required=False)
     tags = serializers.PrimaryKeyRelatedField(many=True, queryset=Tag.objects.all())
-    image = serializers.CharField(max_length=None, allow_blank=True)
-    ingredients = RecipIngredientSerializer(many=True, required=False)
+    image = serializers.CharField(max_length=None, allow_blank=False)
+    ingredients = RecipIngredientSerializer(many=True)
     is_favorited = serializers.BooleanField(read_only=True, default=False)
     is_in_shopping_cart = serializers.BooleanField(read_only=True, default=False)
 
@@ -59,20 +59,23 @@ class RecipSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         tags_data = validated_data.pop('tags')
         ingredients_data = validated_data.pop('ingredients')
-        recipe = Recipes.objects.create(**validated_data)
-        if tags_data:
-            recipe.tags.set(tags_data)
+        recip = Recipes.objects.create(**validated_data)
+        if tags_data and len(tags_data) == len(set(tags_data)):
+            recip.tags.set(tags_data)
         else:
-            raise serializers.ValidationError('Нужно выбрать теги', 400)
+            raise serializers.ValidationError('Необходимо указать теги', 400)
         if ingredients_data:
-            for ingredient_data in ingredients_data:
-                ingredient_id = ingredient_data.pop('id')
-                ingredient_amount = ingredient_data.pop('amount')
-                ingredient2 = Ingredient.objects.get(id=ingredient_id)
-                print(ingredient2)
+            try:
+                for ingredient_data in ingredients_data:
+                    ingredient_id = ingredient_data['id']
+                    ingredient_amount = ingredient_data['amount']
+                    ingredient = Ingredient.objects.get(id=ingredient_id)
+                    RecipesIngredient.objects.create(recipe=recip, ingredient=ingredient, amount=ingredient_amount)
+            except Ingredient.DoesNotExist:
+                raise serializers.ValidationError('Введен ингредиент с несуществующим id', 400)
         else:
-            raise serializers.ValidationError('Необходимо выбрать ингредиенты', 400)
-        return recipe
+            raise serializers.ValidationError('Необходимо указать ингредиенты', 400)
+        return recip
 
 
     def to_representation(self, instance):
@@ -82,13 +85,23 @@ class RecipSerializer(serializers.ModelSerializer):
             'name': tag.name,
             'slug': tag.slug
         } for tag in instance.tags.all()]
+        for ingredient in instance.ingredients.all():
+            print(ingredient)
         representation['ingredients'] = [{
-            'id': ingredient.id,
-            'name': ingredient.name,
-            'measurement_unit': ingredient.measurement_unit,
-            #'amount': RecipesIngredient.amount
-        } for ingredient in instance.ingredients.all()]
+            'id': ingredient.ingredient.id,
+            'name': ingredient.ingredient.name,
+            'measurement_unit': ingredient.ingredient.measurement_unit,
+            'amount': ingredient.amount
+        } for ingredient in instance.recipeingredients.all()]
         return representation
+
+    def validate_ingredients(self, value):
+        ingredients = []
+        for item in value:
+            if item in ingredients:
+                raise serializers.ValidationError('Ингредиенты должны быть уникальными')
+            ingredients.append(item)
+        return value
 
     def create_avatar(self, avatar_base64):
         format, imgstr = avatar_base64.split(';base64,')
@@ -99,4 +112,9 @@ class RecipSerializer(serializers.ModelSerializer):
         if 'avatar' in validated_data:
             avatar_base64 = validated_data.pop('avatar')
             instance.avatar = self.create_avatar(avatar_base64)
-        return super().update(instance, validated_data)
+        instance.name = validated_data.get('name', instance.name)
+        instance.image = validated_data.get('image', instance.image)
+        instance.text = validated_data.get('text', instance.text)
+        instance.cooking_time = validated_data.get(
+            'cooking_time', instance.cooking_time)
+        return instance
