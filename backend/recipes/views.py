@@ -4,7 +4,7 @@ from rest_framework.filters import SearchFilter
 from django_filters.rest_framework import DjangoFilterBackend
 from .models import Tag, Ingredient, Recipes
 from .serializers import TagSerializer, IngredientSerializer, RecipSerializer
-from api.filters import IngredientsNameFilter
+from api.filters import IngredientsNameFilter, RecipeFilter
 from api.permissions import IsOwnerOrReadOnly
 
 
@@ -32,6 +32,8 @@ class RecipViewSet(ModelViewSet):
     serializer_class = RecipSerializer
     http_method_names = ['get', 'post', 'patch']
     permission_classes = (IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly)
+    filter_backends = (DjangoFilterBackend, )
+    filterset_class = RecipeFilter
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)

@@ -41,8 +41,8 @@ class RecipSerializer(serializers.ModelSerializer):
     tags = serializers.PrimaryKeyRelatedField(many=True, queryset=Tag.objects.all())
     image = serializers.CharField(max_length=None, allow_blank=False)
     ingredients = RecipIngredientSerializer(many=True)
-    is_favorited = serializers.SerializerMethodField()
-    is_in_shopping_cart = serializers.SerializerMethodField()
+    is_favorited = serializers.SerializerMethodField(default=True)
+    is_in_shopping_cart = serializers.SerializerMethodField(default=True)
 
     def get_is_favorited(self, obj):
         return False
