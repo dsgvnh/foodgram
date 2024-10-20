@@ -6,7 +6,10 @@ from .models import Tag, Ingredient, Recipes
 from .serializers import TagSerializer, IngredientSerializer, RecipSerializer
 from api.filters import IngredientsNameFilter, RecipeFilter
 from api.permissions import IsOwnerOrReadOnly
-
+from rest_framework.decorators import action
+from django.shortcuts import get_object_or_404
+from rest_framework.response import Response
+from rest_framework import status
 
 class TagsViewSet(ReadOnlyModelViewSet):
     model = Tag
@@ -37,3 +40,10 @@ class RecipViewSet(ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
+
+    @action(methods=['GET', ], detail=True,
+            url_path='get-link')
+    def get_link(self, request, pk):
+        recipe = get_object_or_404(Recipes, id=pk)
+        short_link = f"http://127.0.0.1:8000/s/{recipe.id}"
+        return Response({"short-link": short_link}, status=status.HTTP_200_OK)
