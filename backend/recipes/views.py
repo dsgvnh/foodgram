@@ -7,8 +7,14 @@ from .serializers import TagSerializer, IngredientSerializer, RecipSerializer, F
 from api.filters import IngredientsNameFilter, RecipeFilter
 from api.permissions import IsOwnerOrReadOnly
 from rest_framework.decorators import action
+<<<<<<< HEAD
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
+=======
+from django.shortcuts import get_object_or_404
+from rest_framework.response import Response
+from rest_framework import status
+>>>>>>> ea0cf94876ec7b2559fa7cb5eefc6f9278422864
 
 class TagsViewSet(ReadOnlyModelViewSet):
     model = Tag
