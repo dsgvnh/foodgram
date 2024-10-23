@@ -67,3 +67,27 @@ class RecipesIngredient(models.Model):
                 f'{self.ingredient.name} - '
                 f'{self.amount} '
                 f'{self.ingredient.measurement_unit}')
+
+
+class Favorite(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favorite', verbose_name='Пользователь')
+    recipe = models.ForeignKey(Recipes, on_delete=models.CASCADE, related_name='favorite', verbose_name='Рецепт')
+
+    class Meta:
+        verbose_name = 'Избранное'
+        verbose_name_plural = 'Избранное'
+
+    def __str__(self) -> str:
+        return f'{self.user} and {self.recipe}'
+
+
+class Shopping_cart(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='shopcart', verbose_name='Пользователь')
+    recipe = models.ForeignKey(Recipes, on_delete=models.CASCADE, related_name='shopcart', verbose_name='Рецепт')
+
+    class Meta:
+        verbose_name = 'Корзина'
+        verbose_name_plural = 'Корзина'
+
+    def __str__(self) -> str:
+        return f'{self.user} and {self.recipe}'

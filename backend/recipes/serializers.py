@@ -1,8 +1,6 @@
 from rest_framework import serializers
-from .models import Tag, Ingredient, Recipes, RecipesIngredient
-from django.core.files.base import ContentFile
-from users.serializers import UserListSerializer
-import base64
+from .models import Tag, Ingredient, Recipes, RecipesIngredient, Favorite
+from users.serializers import UserListSerializer, Base64ImageField
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -21,13 +19,14 @@ class IngredientSerializer(serializers.ModelSerializer):
         model = Ingredient
         fields = ('id', 'name', 'measurement_unit')
 
+
 class RecipIngredientSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField()
     amount = serializers.IntegerField(default=0)
 
     class Meta:
         model = RecipesIngredient
-        fields = ['id', 'amount']
+        fields = ('id', 'amount',)
 
     def validate_amount(self, value):
         if value < 1:
@@ -39,7 +38,7 @@ class RecipIngredientSerializer(serializers.ModelSerializer):
 class RecipSerializer(serializers.ModelSerializer):
     author = UserListSerializer(required=False)
     tags = serializers.PrimaryKeyRelatedField(many=True, queryset=Tag.objects.all())
-    image = serializers.CharField(max_length=None, allow_blank=False)
+    image = Base64ImageField()
     ingredients = RecipIngredientSerializer(many=True)
     is_favorited = serializers.SerializerMethodField(default=True)
     is_in_shopping_cart = serializers.SerializerMethodField(default=True)
@@ -108,15 +107,8 @@ class RecipSerializer(serializers.ModelSerializer):
             ingredients.append(item)
         return value
 
-    def create_avatar(self, avatar_base64):
-        format, imgstr = avatar_base64.split(';base64,')
-        ext = format.split('/')[-1]
-        return ContentFile(base64.b64decode(imgstr), name=f"avatar.{ext}")
-
     def update(self, instance, validated_data):
-        if 'avatar' in validated_data:
-            avatar_base64 = validated_data.pop('avatar')
-            instance.avatar = self.create_avatar(avatar_base64)
+        instance.image = validated_data.get('image', instance.image)
         instance.name = validated_data.get('name', instance.name)
         instance.text = validated_data.get('text', instance.text)
         instance.cooking_time = validated_data.get('cooking_time',
@@ -141,3 +133,19 @@ class RecipSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Необходимо добавить ингредиенты', 400)
         instance.save()
         return instance
+
+
+class FavoriteSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField()
+
+    class Meta:
+        model = Favorite
+        fields = ('id', )
+
+    def to_representation(self, instance):
+        return {
+            'id': instance.id,
+            'name': instance.name,
+            'image': str(instance.image),
+            'cooking_time': instance.cooking_time
+        }
