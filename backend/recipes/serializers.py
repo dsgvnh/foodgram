@@ -135,7 +135,7 @@ class RecipSerializer(serializers.ModelSerializer):
         return instance
 
 
-class FavoriteSerializer(serializers.ModelSerializer):
+class FavoriteAndShopCartSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField()
 
     class Meta:
