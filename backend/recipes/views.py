@@ -8,8 +8,13 @@ from api.filters import IngredientsNameFilter, RecipeFilter
 from api.permissions import IsOwnerOrReadOnly
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from django.shortcuts import get_object_or_404, get_list_or_404
+from django.shortcuts import get_object_or_404
 from django.http import HttpResponse
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+import io
 
 class TagsViewSet(ReadOnlyModelViewSet):
     model = Tag
@@ -87,10 +92,10 @@ class RecipViewSet(ModelViewSet):
     @action(
         methods=['GET'],
         detail=False,
-        permission_classes=(IsAuthenticated, ),
+        permission_classes=(AllowAny, ),
     )
     def download_shopping_cart(self, request):
-        items = Shopping_cart.objects.filter(user=request.user)
+        items = Shopping_cart.objects.all()#filter(user=request.user)
         recipes = [item.recipe for item in items]
         if not recipes:
             return Response({'errors': 'Корзина пуста'}, status=400)
@@ -106,9 +111,19 @@ class RecipViewSet(ModelViewSet):
                     ingredients[key] += amount
                 else:
                     ingredients[key] = amount
-        shopping_list_text = "Список покупок:\n\n"
+        buffer = io.BytesIO()
+        p = canvas.Canvas(buffer, pagesize=letter)
+        width, height = letter
+        pdfmetrics.registerFont(TTFont('Tahoma', 'tahoma.ttf'))
+        p.setFont('Tahoma', 12)
+        p.drawString(100, height - 50, "Список покупок:")
+        y_position = height - 70
         for item, total_amount in ingredients.items():
-            shopping_list_text += f"{item} — {total_amount}\n"
-        response = HttpResponse(shopping_list_text, content_type='text/plain')
-        response['Content-Disposition'] = 'attachment; filename="shopping_cart.txt"'
+            p.drawString(100, y_position, f"{item} — {total_amount}")
+            y_position -= 20
+        p.showPage()
+        p.save()
+        buffer.seek(0)
+        response = HttpResponse(buffer.read(), content_type='application/pdf')
+        response['Content-Disposition'] = 'attachment; filename="shopping_cart.pdf"'
         return response
