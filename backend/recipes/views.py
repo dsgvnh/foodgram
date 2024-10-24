@@ -92,10 +92,10 @@ class RecipViewSet(ModelViewSet):
     @action(
         methods=['GET'],
         detail=False,
-        permission_classes=(AllowAny, ),
+        permission_classes=(IsAuthenticated, ),
     )
     def download_shopping_cart(self, request):
-        items = Shopping_cart.objects.all()#filter(user=request.user)
+        items = Shopping_cart.objects.filter(user=request.user)
         recipes = [item.recipe for item in items]
         if not recipes:
             return Response({'errors': 'Корзина пуста'}, status=400)
