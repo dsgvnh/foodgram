@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Tag, Ingredient, Recipes, RecipesIngredient, Favorite
+from .models import Tag, Ingredient, Recipes, RecipesIngredient, Favorite, Shopping_cart
 from users.serializers import UserListSerializer, Base64ImageField
 
 
@@ -31,7 +31,7 @@ class RecipIngredientSerializer(serializers.ModelSerializer):
     def validate_amount(self, value):
         if value < 1:
             raise serializers.ValidationError(
-                'Параметр "amount" должен быть больше 1')
+                'Количество должно быть больше 1')
         return value
 
 
@@ -39,16 +39,24 @@ class RecipSerializer(serializers.ModelSerializer):
     author = UserListSerializer(required=False)
     tags = serializers.PrimaryKeyRelatedField(many=True, queryset=Tag.objects.all())
     image = Base64ImageField()
-    ingredients = RecipIngredientSerializer(many=True)
-    is_favorited = serializers.SerializerMethodField(default=True)
-    is_in_shopping_cart = serializers.SerializerMethodField(default=True)
+    ingredients = RecipIngredientSerializer(many=True,)
+    is_favorited = serializers.SerializerMethodField()
+    is_in_shopping_cart = serializers.SerializerMethodField()
 
     def get_is_favorited(self, obj):
-        return False
+        user = self.context['request'].user
+        if user.is_authenticated:
+            return Favorite.objects.filter(user=user, recipe=obj).exists()
+        else:
+            return False
 
     def get_is_in_shopping_cart(self, obj):
-        return False
-    
+        user = self.context['request'].user
+        if user.is_authenticated:
+            return Shopping_cart.objects.filter(user=user, recipe=obj).exists()
+        else:
+            return False
+
     class Meta:
         model = Recipes
         fields = ('id',
@@ -66,23 +74,13 @@ class RecipSerializer(serializers.ModelSerializer):
         tags_data = validated_data.pop('tags')
         ingredients_data = validated_data.pop('ingredients')
         recip = Recipes.objects.create(**validated_data)
-        if tags_data and len(tags_data) == len(set(tags_data)):
-            recip.tags.set(tags_data)
-        else:
-            raise serializers.ValidationError('Необходимо указать теги', 400)
-        if ingredients_data:
-            try:
-                for ingredient_data in ingredients_data:
-                    ingredient_id = ingredient_data['id']
-                    ingredient_amount = ingredient_data['amount']
-                    ingredient = Ingredient.objects.get(id=ingredient_id)
-                    RecipesIngredient.objects.create(recipe=recip, ingredient=ingredient, amount=ingredient_amount)
-            except Ingredient.DoesNotExist:
-                raise serializers.ValidationError('Введен ингредиент с несуществующим id', 400)
-        else:
-            raise serializers.ValidationError('Необходимо указать ингредиенты', 400)
+        recip.tags.set(tags_data)
+        for ingredient_data in ingredients_data:
+            ingredient_id = ingredient_data['id']
+            ingredient_amount = ingredient_data['amount']
+            ingredient = Ingredient.objects.get(id=ingredient_id)
+            RecipesIngredient.objects.create(recipe=recip, ingredient=ingredient, amount=ingredient_amount)
         return recip
-
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
@@ -100,11 +98,24 @@ class RecipSerializer(serializers.ModelSerializer):
         return representation
 
     def validate_ingredients(self, value):
+        if not value:
+            raise serializers.ValidationError('Ингредиенты не могут быть пустыми', 400)
         ingredients = []
         for item in value:
+            try:
+                exist_ingredient = Ingredient.objects.get(id=item['id'])
+            except Ingredient.DoesNotExist:
+                raise serializers.ValidationError('Введен ингредиент с несуществующим id', 400)
             if item in ingredients:
-                raise serializers.ValidationError('Ингредиенты должны быть уникальными')
+                raise serializers.ValidationError('Ингредиенты должны быть уникальными', 400)
             ingredients.append(item)
+        return value
+
+    def validate_tags(self, value):
+        if not value:
+            raise serializers.ValidationError("Теги не могут быть пустыми", 400)
+        if len(value) != len(set(value)):
+            raise serializers.ValidationError("Теги должны быть уникальными", 400)
         return value
 
     def update(self, instance, validated_data):
@@ -114,23 +125,20 @@ class RecipSerializer(serializers.ModelSerializer):
         instance.cooking_time = validated_data.get('cooking_time',
                                                    instance.cooking_time)
         tags_data = validated_data.get('tags', None)
-        if tags_data and len(tags_data) == len(set(tags_data)):
+        if tags_data:
             instance.tags.set(tags_data)
         else:
-            raise serializers.ValidationError('Необходимо добавить теги', 400)
+            raise serializers.ValidationError("Теги не могут быть пустыми", 400)
         ingredients_data = validated_data.get('ingredients', [])
         if ingredients_data:
-            try:
-                for ingredient_data in ingredients_data:
-                    ingredient_id = ingredient_data['id']
-                    amount = ingredient_data['amount']
-                    ingredient = Ingredient.objects.get(id=ingredient_id)
-                    RecipesIngredient.objects.create(
-                        recipe=instance, ingredient=ingredient, amount=amount)
-            except Ingredient.DoesNotExist:
-                raise serializers.ValidationError('Введен несуществующий ингредиент', 400)
+            for ingredient_data in ingredients_data:
+                ingredient_id = ingredient_data['id']
+                amount = ingredient_data['amount']
+                ingredient = Ingredient.objects.get(id=ingredient_id)
+                RecipesIngredient.objects.create(
+                    recipe=instance, ingredient=ingredient, amount=amount)
         else:
-            raise serializers.ValidationError('Необходимо добавить ингредиенты', 400)
+            raise serializers.ValidationError("Ингредиенты не могут быть пустыми", 400)
         instance.save()
         return instance
 
