@@ -157,3 +157,11 @@ class FavoriteAndShopCartSerializer(serializers.ModelSerializer):
             'image': str(instance.image),
             'cooking_time': instance.cooking_time
         }
+
+
+class RecipForSubscribersSerializer(serializers.ModelSerializer):
+    image = Base64ImageField()
+
+    class Meta:
+        model = Recipes
+        fields = ('id', 'name', 'image', 'cooking_time')

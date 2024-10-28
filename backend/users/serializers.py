@@ -3,7 +3,8 @@ from rest_framework import serializers
 from rest_framework.exceptions import AuthenticationFailed
 from djoser.serializers import UserCreateSerializer
 from django.core.files.base import ContentFile
-from .models import User
+from .models import User, Subscribers
+from recipes.models import Recipes
 import base64
 
 
@@ -17,10 +18,19 @@ class Base64ImageField(ImageField):
 
 
 class UserListSerializer(ModelSerializer):
+    is_subscribed = serializers.SerializerMethodField()
+
     class Meta:
         model = User
         fields = ('email', 'id', 'username', 'first_name',
                   'last_name', 'is_subscribed', 'avatar')
+    
+    def get_is_subscribed(self, author):
+        request = self.context.get('request')
+        user = request.user
+        if user.is_anonymous:
+            return False
+        return Subscribers.objects.filter(subscriber=user, subscribe_to=author).exists()
 
 
 class UserCreatesSerializer(UserCreateSerializer):
@@ -45,3 +55,37 @@ class AvatarSerializer(ModelSerializer):
     class Meta:
         model = User
         fields = ('avatar',)
+
+
+class SubscribeSerializer(UserListSerializer):
+    recipes = serializers.SerializerMethodField(default=0)
+    recipes_count = serializers.SerializerMethodField(default=5)
+
+    class Meta(UserListSerializer.Meta):
+        fields = UserListSerializer.Meta.fields + ('recipes', 'recipes_count')
+        read_only_fields = ('email', 'username', 'first_name', 'last_name')
+
+    def validate(self, data):
+        author = self.instance
+        request = self.context['request']
+        user = request.user
+        if author == user:
+            raise serializers.ValidationError('Нельзя подписаться на себя!', 400)
+        if Subscribers.objects.filter(subscriber=user, subscribe_to=author).exists():
+            raise serializers.ValidationError('Вы уже подписаны на этого пользователя!', 400)
+        return data
+
+    def get_recipes(self, author):
+        from recipes.serializers import RecipForSubscribersSerializer
+        recipes = author.recipes.all()
+        request = self.context['request']
+        limit = request.GET.get('recipes_limit')
+        if limit and recipes:
+            recipes = recipes[:int(limit)]
+            serializer = RecipForSubscribersSerializer(recipes, many=True, read_only=True)
+            return serializer.data
+        else:
+            return recipes
+    
+    def get_recipes_count(self, author):
+        return author.recipes.count()
