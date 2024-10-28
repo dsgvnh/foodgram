@@ -1,6 +1,6 @@
 from django.contrib import admin
 from recipes.models import Tag, Ingredient, Recipes, RecipesIngredient, Favorite, Shopping_cart
-from users.models import User
+from users.models import User, Subscribers
 
 admin.site.register(Tag)
 admin.site.register(User)
@@ -9,3 +9,4 @@ admin.site.register(Recipes)
 admin.site.register(RecipesIngredient)
 admin.site.register(Favorite)
 admin.site.register(Shopping_cart)
+admin.site.register(Subscribers)

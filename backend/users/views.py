@@ -6,6 +6,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework import status
 from django.shortcuts import get_object_or_404
 from .models import Subscribers
+from api.pagination import SubsPagination
 
 User = get_user_model()
 
@@ -42,3 +43,17 @@ class SubcribeView(APIView):
         serializer.is_valid(raise_exception=True)
         Subscribers.objects.create(subscriber=user, subscribe_to=subscribe_to)
         return Response(serializer.data, status=201)
+
+
+class SubscribeListView(APIView):
+    permission_classes = (IsAuthenticated,)
+    pagination_class = SubsPagination
+
+    def get(self, request):
+        paginator = self.pagination_class()
+        user = request.user
+        subscriptions = Subscribers.objects.filter(subscriber=user)
+        pag_subs = paginator.paginate_queryset(subscriptions, request)
+        subscribed_users = [subscription.subscribe_to for subscription in pag_subs]
+        serializer = SubscribeSerializer(subscribed_users, many=True, context={'request': request})
+        return paginator.get_paginated_response(serializer.data)

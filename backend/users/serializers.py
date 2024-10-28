@@ -58,8 +58,8 @@ class AvatarSerializer(ModelSerializer):
 
 
 class SubscribeSerializer(UserListSerializer):
-    recipes = serializers.SerializerMethodField(default=0)
-    recipes_count = serializers.SerializerMethodField(default=5)
+    recipes = serializers.SerializerMethodField()
+    recipes_count = serializers.SerializerMethodField()
 
     class Meta(UserListSerializer.Meta):
         fields = UserListSerializer.Meta.fields + ('recipes', 'recipes_count')
@@ -80,12 +80,10 @@ class SubscribeSerializer(UserListSerializer):
         recipes = author.recipes.all()
         request = self.context['request']
         limit = request.GET.get('recipes_limit')
-        if limit and recipes:
+        if limit:
             recipes = recipes[:int(limit)]
-            serializer = RecipForSubscribersSerializer(recipes, many=True, read_only=True)
-            return serializer.data
-        else:
-            return recipes
+        serializer = RecipForSubscribersSerializer(recipes, many=True, read_only=True)
+        return serializer.data
     
     def get_recipes_count(self, author):
         return author.recipes.count()
