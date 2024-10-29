@@ -16,6 +16,7 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 import io
 
+
 class TagsViewSet(ReadOnlyModelViewSet):
     model = Tag
     queryset = Tag.objects.all()
