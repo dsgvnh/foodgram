@@ -1,12 +1,8 @@
 from rest_framework.pagination import PageNumberPagination
 
+from .constants import PAGINATION_PAGE_SIZE
 
-class UsersPagination(PageNumberPagination):
+
+class DefaultPagination(PageNumberPagination):
     page_size_query_param = 'limit'
-    page_size = 6
-
-
-class SubsPagination(PageNumberPagination):
-    page_size_query_param = 'limit'
-    page_size = 6
-    max_page_size = 2
+    page_size = PAGINATION_PAGE_SIZE

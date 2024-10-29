@@ -1,6 +1,10 @@
-from rest_framework import serializers
-from .models import Tag, Ingredient, Recipes, RecipesIngredient, Favorite, Shopping_cart
-from users.serializers import UserListSerializer, Base64ImageField
+from rest_framework import serializers, status
+
+from api.constants import MIN_VALUE_FOR_VALIDATOR
+from users.serializers import Base64ImageField, UserListSerializer
+
+from .models import (Favorite, Ingredient, Recipes, RecipesIngredient,
+                     Shopping_cart, Tag)
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -29,15 +33,16 @@ class RecipIngredientSerializer(serializers.ModelSerializer):
         fields = ('id', 'amount',)
 
     def validate_amount(self, value):
-        if value < 1:
+        if value < MIN_VALUE_FOR_VALIDATOR:
             raise serializers.ValidationError(
-                'Количество должно быть больше 1')
+                f'Количество должно быть больше {MIN_VALUE_FOR_VALIDATOR}')
         return value
 
 
 class RecipSerializer(serializers.ModelSerializer):
     author = UserListSerializer(required=False)
-    tags = serializers.PrimaryKeyRelatedField(many=True, queryset=Tag.objects.all())
+    tags = serializers.PrimaryKeyRelatedField(many=True,
+                                              queryset=Tag.objects.all())
     image = Base64ImageField()
     ingredients = RecipIngredientSerializer(many=True,)
     is_favorited = serializers.SerializerMethodField()
@@ -79,7 +84,9 @@ class RecipSerializer(serializers.ModelSerializer):
             ingredient_id = ingredient_data['id']
             ingredient_amount = ingredient_data['amount']
             ingredient = Ingredient.objects.get(id=ingredient_id)
-            RecipesIngredient.objects.create(recipe=recip, ingredient=ingredient, amount=ingredient_amount)
+            RecipesIngredient.objects.create(recipe=recip,
+                                             ingredient=ingredient,
+                                             amount=ingredient_amount)
         return recip
 
     def to_representation(self, instance):
@@ -99,23 +106,31 @@ class RecipSerializer(serializers.ModelSerializer):
 
     def validate_ingredients(self, value):
         if not value:
-            raise serializers.ValidationError('Ингредиенты не могут быть пустыми', 400)
+            raise serializers.ValidationError(
+                'Ингредиенты не могут быть пустыми',
+                status.HTTP_400_BAD_REQUEST)
         ingredients = []
         for item in value:
             try:
-                exist_ingredient = Ingredient.objects.get(id=item['id'])
+                Ingredient.objects.get(id=item['id'])
             except Ingredient.DoesNotExist:
-                raise serializers.ValidationError('Введен ингредиент с несуществующим id', 400)
+                raise serializers.ValidationError(
+                    'Введен ингредиент с несуществующим id',
+                    status.HTTP_400_BAD_REQUEST)
             if item in ingredients:
-                raise serializers.ValidationError('Ингредиенты должны быть уникальными', 400)
+                raise serializers.ValidationError(
+                    'Ингредиенты должны быть уникальными',
+                    status.HTTP_400_BAD_REQUEST)
             ingredients.append(item)
         return value
 
     def validate_tags(self, value):
         if not value:
-            raise serializers.ValidationError("Теги не могут быть пустыми", 400)
+            raise serializers.ValidationError(
+                'Теги не могут быть пустыми', status.HTTP_400_BAD_REQUEST)
         if len(value) != len(set(value)):
-            raise serializers.ValidationError("Теги должны быть уникальными", 400)
+            raise serializers.ValidationError(
+                'Теги должны быть уникальными', status.HTTP_400_BAD_REQUEST)
         return value
 
     def update(self, instance, validated_data):
@@ -128,7 +143,8 @@ class RecipSerializer(serializers.ModelSerializer):
         if tags_data:
             instance.tags.set(tags_data)
         else:
-            raise serializers.ValidationError("Теги не могут быть пустыми", 400)
+            raise serializers.ValidationError(
+                'Теги не могут быть пустыми', status.HTTP_400_BAD_REQUEST)
         ingredients_data = validated_data.get('ingredients', [])
         if ingredients_data:
             for ingredient_data in ingredients_data:
@@ -138,7 +154,9 @@ class RecipSerializer(serializers.ModelSerializer):
                 RecipesIngredient.objects.create(
                     recipe=instance, ingredient=ingredient, amount=amount)
         else:
-            raise serializers.ValidationError("Ингредиенты не могут быть пустыми", 400)
+            raise serializers.ValidationError(
+                'Ингредиенты не могут быть пустыми',
+                status.HTTP_400_BAD_REQUEST)
         instance.save()
         return instance
 

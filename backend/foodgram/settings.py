@@ -85,7 +85,7 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
     ],
-    'DEFAULT_PAGINATION_CLASS': 'api.pagination.UsersPagination',
+    'DEFAULT_PAGINATION_CLASS': 'api.pagination.DefaultPagination',
     'DEFAULT.FILTER.BACKENDS': (
         'django_filters.rest_framework.DjangoFilterBackend'
     ),

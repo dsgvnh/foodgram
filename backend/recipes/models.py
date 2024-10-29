@@ -1,13 +1,18 @@
-from django.db import models
 from django.core.validators import MinValueValidator
+from django.db import models
+
+from api.constants import (MAX_INGREDIENT_MEASURE_UNIT_LENGTH,
+                           MAX_INGREDIENT_NAME_LENGTH, MAX_RECIPE_NAME_LENGTH,
+                           MAX_TAG_NAME_LENGTH, MAX_TAG_SLUG_LENGTH,
+                           MIN_VALUE_FOR_VALIDATOR)
 from api.validators import tag_regex_validator
 from users.models import User
 
 
 class Tag(models.Model):
-    name = models.CharField('Название', max_length=32,
+    name = models.CharField('Название', max_length=MAX_TAG_NAME_LENGTH,
                             unique=True, blank=False)
-    slug = models.SlugField('Slug', max_length=32,
+    slug = models.SlugField('Slug', max_length=MAX_TAG_SLUG_LENGTH,
                             unique=True, blank=False,
                             validators=(tag_regex_validator,))
 
@@ -19,9 +24,13 @@ class Tag(models.Model):
 
 
 class Ingredient(models.Model):
-    name = models.CharField('Название', max_length=128, blank=False, unique=True)
-    measurement_unit = models.CharField('Ед. измерения', max_length=64,
-                                        blank=False)
+    name = models.CharField('Название', max_length=MAX_INGREDIENT_NAME_LENGTH,
+                            blank=False, unique=True)
+    measurement_unit = models.CharField(
+        'Ед. измерения',
+        max_length=MAX_INGREDIENT_MEASURE_UNIT_LENGTH,
+        blank=False
+    )
 
     class Meta:
         verbose_name, verbose_name_plural = 'Ингредиент', 'Ингредиенты'
@@ -36,27 +45,58 @@ class Recipes(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE,
                                related_name='recipes',
                                verbose_name='Автор',)
-    ingredients = models.ManyToManyField(Ingredient, through='RecipesIngredient', related_name='recipes',
-                                         verbose_name='Ингредиенты')
-    name = models.CharField('Название', max_length=256, blank=False)
+    ingredients = models.ManyToManyField(
+        Ingredient,
+        through='RecipesIngredient',
+        related_name='recipes',
+        verbose_name='Ингредиенты'
+    )
+    name = models.CharField('Название',
+                            max_length=MAX_RECIPE_NAME_LENGTH,
+                            blank=False)
     image = models.ImageField('Картинка', upload_to='recipes/images/',
                               blank=False)
     text = models.TextField('Описание')
     cooking_time = models.PositiveSmallIntegerField(
         'Время готовки',
-        validators=(MinValueValidator(1, 'Минимальное значение - 1'), ))
+        validators=(
+            MinValueValidator(
+                MIN_VALUE_FOR_VALIDATOR,
+                f'Минимальное значение - {MIN_VALUE_FOR_VALIDATOR}'),
+        )
+    )
+    pub_date = models.DateTimeField(
+        verbose_name='Дата публикации',
+        auto_now_add=True
+    )
 
     class Meta:
         verbose_name, verbose_name_plural = 'Рецепт', 'Рецепты'
+        ordering = ('-pub_date',)
 
     def __str__(self) -> str:
         return self.name
 
 
 class RecipesIngredient(models.Model):
-    recipe = models.ForeignKey(Recipes, on_delete=models.CASCADE, related_name='recipeingredients', verbose_name='рецепт')
-    ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE, related_name='recipeingredients', verbose_name='ингредиент')
-    amount = models.SmallIntegerField('Количество', validators=(MinValueValidator(1, 'Минимальное значение - 1'), ))
+    recipe = models.ForeignKey(
+        Recipes,
+        on_delete=models.CASCADE,
+        related_name='recipeingredients',
+        verbose_name='Рецепт')
+    ingredient = models.ForeignKey(
+        Ingredient,
+        on_delete=models.CASCADE,
+        related_name='recipeingredients',
+        verbose_name='Ингредиент')
+    amount = models.SmallIntegerField(
+        'Количество',
+        validators=(
+            MinValueValidator(
+                MIN_VALUE_FOR_VALIDATOR,
+                f'Минимальное значение - {MIN_VALUE_FOR_VALIDATOR}'),
+        )
+    )
 
     class Meta:
         verbose_name = 'Ингредиенты в рецепте'
@@ -70,24 +110,39 @@ class RecipesIngredient(models.Model):
 
 
 class Favorite(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favorite', verbose_name='Пользователь')
-    recipe = models.ForeignKey(Recipes, on_delete=models.CASCADE, related_name='favorite', verbose_name='Рецепт')
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='favorite',
+        verbose_name='Пользователь')
+    recipe = models.ForeignKey(
+        Recipes,
+        on_delete=models.CASCADE,
+        related_name='favorite',
+        verbose_name='Рецепт')
 
     class Meta:
-        verbose_name = 'Избранное'
-        verbose_name_plural = 'Избранное'
+        verbose_name, verbose_name_plural = 'Избранное', 'Избранное'
 
     def __str__(self) -> str:
-        return f'{self.user} and {self.recipe}'
+        return f'{self.user} добавил {self.recipe} в избранное'
 
 
 class Shopping_cart(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='shopcart', verbose_name='Пользователь')
-    recipe = models.ForeignKey(Recipes, on_delete=models.CASCADE, related_name='shopcart', verbose_name='Рецепт')
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='shopcart',
+        verbose_name='Пользователь')
+    recipe = models.ForeignKey(
+        Recipes,
+        on_delete=models.CASCADE,
+        related_name='shopcart',
+        verbose_name='Рецепт')
 
     class Meta:
         verbose_name = 'Корзина'
         verbose_name_plural = 'Корзина'
 
     def __str__(self) -> str:
-        return f'{self.user} and {self.recipe}'
+        return f'{self.user} добавил {self.recipe} в корзину'

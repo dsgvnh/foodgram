@@ -1,12 +1,15 @@
 from django.contrib.auth import get_user_model
-from rest_framework.views import APIView
-from .serializers import AvatarSerializer, SubscribeSerializer
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework import status
 from django.shortcuts import get_object_or_404
+
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from api.pagination import DefaultPagination
+
 from .models import Subscribers
-from api.pagination import SubsPagination
+from .serializers import AvatarSerializer, SubscribeSerializer
 
 User = get_user_model()
 
@@ -39,21 +42,37 @@ class SubcribeView(APIView):
     def post(self, request, pk):
         user = request.user
         subscribe_to = get_object_or_404(User, id=pk)
-        serializer = SubscribeSerializer(subscribe_to, data=request.data, context={'request': request})
+        serializer = SubscribeSerializer(subscribe_to, data=request.data,
+                                         context={'request': request})
         serializer.is_valid(raise_exception=True)
         Subscribers.objects.create(subscriber=user, subscribe_to=subscribe_to)
-        return Response(serializer.data, status=201)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def delete(self, request, pk):
+        user = request.user
+        unsub_author = get_object_or_404(User, id=pk)
+        if Subscribers.objects.filter(subscriber=user,
+                                      subscribe_to=unsub_author).exists():
+            Subscribers.objects.filter(subscriber=user,
+                                       subscribe_to=unsub_author).delete()
+            return Response({'Сообщение': 'Вы успешно отписались от автора!'},
+                            status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response({'Ошибка': 'Вы не были подписаны на автора!'},
+                            status=status.HTTP_400_BAD_REQUEST)
 
 
 class SubscribeListView(APIView):
     permission_classes = (IsAuthenticated,)
-    pagination_class = SubsPagination
+    pagination_class = DefaultPagination
 
     def get(self, request):
         paginator = self.pagination_class()
         user = request.user
         subscriptions = Subscribers.objects.filter(subscriber=user)
         pag_subs = paginator.paginate_queryset(subscriptions, request)
-        subscribed_users = [subscription.subscribe_to for subscription in pag_subs]
-        serializer = SubscribeSerializer(subscribed_users, many=True, context={'request': request})
+        subscribed_users = [subscription.subscribe_to
+                            for subscription in pag_subs]
+        serializer = SubscribeSerializer(subscribed_users, many=True,
+                                         context={'request': request})
         return paginator.get_paginated_response(serializer.data)

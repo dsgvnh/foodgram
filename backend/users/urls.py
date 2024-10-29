@@ -1,4 +1,5 @@
-from django.urls import path, include
+from django.urls import include, path
+
 from .views import AvatarPutDeleteView, SubcribeView, SubscribeListView
 
 app_name = 'users'
