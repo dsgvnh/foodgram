@@ -1,10 +1,10 @@
 from django_filters.rest_framework import CharFilter, FilterSet, filters
 
-from recipes.models import Ingredient, Recipes, Tag
+from recipes.models import Ingredient, Recipes
 
 
 class IngredientsNameFilter(FilterSet):
-    name = CharFilter(lookup_expr='icontains')
+    name = CharFilter(lookup_expr='startswith')
 
     class Meta:
         model = Ingredient
@@ -13,11 +13,7 @@ class IngredientsNameFilter(FilterSet):
 
 class RecipeFilter(FilterSet):
 
-    tags = filters.ModelMultipleChoiceFilter(
-        field_name='tags__slug',
-        to_field_name='slug',
-        queryset=Tag.objects.all(),
-    )
+    tags = filters.AllValuesMultipleFilter(field_name='tags__slug')
     is_favorited = filters.BooleanFilter(
         method='is_favorited_filter',
         label='В избранном'

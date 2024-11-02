@@ -1,7 +1,8 @@
 from rest_framework import serializers, status
 
 from api.constants import MIN_VALUE_FOR_VALIDATOR
-from users.serializers import Base64ImageField, UserListSerializer
+from api.fields import Base64ImageField
+from users.serializers import UserListSerializer
 
 from .models import (Favorite, Ingredient, Recipes, RecipesIngredient,
                      Shopping_cart, Tag)

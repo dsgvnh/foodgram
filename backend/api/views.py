@@ -20,9 +20,10 @@ from api.constants import (FONT_SIZE, SHOPPING_CART_OFFSET_X,
 from api.filters import IngredientsNameFilter, RecipeFilter
 from api.permissions import IsOwnerOrReadOnly
 
-from .models import Favorite, Ingredient, Recipes, Shopping_cart, Tag
-from .serializers import (FavoriteAndShopCartSerializer, IngredientSerializer,
-                          RecipSerializer, TagSerializer)
+from recipes.models import Favorite, Ingredient, Recipes, Shopping_cart, Tag
+from recipes.serializers import (FavoriteAndShopCartSerializer,
+                                 IngredientSerializer,
+                                 RecipSerializer, TagSerializer)
 
 
 class TagsViewSet(ReadOnlyModelViewSet):

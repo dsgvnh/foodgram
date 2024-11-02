@@ -44,6 +44,14 @@ class Subscribers(models.Model):
 
     class Meta:
         verbose_name, verbose_name_plural = 'Подписка', 'Подписки'
+        constraints = [
+            models.UniqueConstraint(fields=['subscriber', 'subscribe_to'],
+                                    name='unique_subscribers'),
+            models.CheckConstraint(
+                check=~models.Q(subscriber=models.F('subscribe_to')),
+                name='cannot_subscribe_to_self'
+            ),
+        ]
 
     def __str__(self) -> str:
         return f'{self.subscriber} подписан на {self.subscribe_to}'
