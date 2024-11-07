@@ -22,8 +22,7 @@ from api.permissions import IsOwnerOrReadOnly
 
 from recipes.models import Favorite, Ingredient, Recipes, Shopping_cart, Tag
 from recipes.serializers import (FavoriteAndShopCartSerializer,
-                                 IngredientSerializer,
-                                 RecipSerializer, TagSerializer)
+                                 IngredientSerializer, RecipeReadSerializer, RecipeSerializer, TagSerializer)
 
 
 class TagsViewSet(ReadOnlyModelViewSet):
@@ -47,11 +46,16 @@ class IngredientsViewSet(ReadOnlyModelViewSet):
 class RecipViewSet(ModelViewSet):
     model = Recipes
     queryset = Recipes.objects.all()
-    serializer_class = RecipSerializer
+    serializer_class = RecipeSerializer
     http_method_names = ['get', 'post', 'patch', 'delete']
     permission_classes = (IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly)
     filter_backends = (DjangoFilterBackend, )
     filterset_class = RecipeFilter
+
+    def get_serializer_class(self):
+        if self.action in ('list', 'retrieve'):
+            return RecipeReadSerializer
+        return RecipeSerializer
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)

@@ -1,22 +1,10 @@
-import base64
-
-from django.core.files.base import ContentFile
-
 from djoser.serializers import UserCreateSerializer
 from rest_framework import serializers, status
 from rest_framework.exceptions import AuthenticationFailed
-from rest_framework.serializers import ImageField, ModelSerializer
+from rest_framework.serializers import ModelSerializer
 
 from .models import Subscribers, User
-
-
-class Base64ImageField(ImageField):
-    def to_internal_value(self, data):
-        if isinstance(data, str) and data.startswith('data:image'):
-            format, imgstr = data.split(';base64,')
-            ext = format.split('/')[-1]
-            data = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)
-        return super().to_internal_value(data)
+from api.fields import Base64ImageField
 
 
 class UserListSerializer(ModelSerializer):
@@ -29,11 +17,10 @@ class UserListSerializer(ModelSerializer):
 
     def get_is_subscribed(self, author):
         request = self.context.get('request')
-        user = request.user
-        if user.is_anonymous:
-            return False
-        return Subscribers.objects.filter(subscriber=user, subscribe_to=author
-                                          ).exists()
+        if request and not request.user.is_anonymous:
+            return Subscribers.objects.filter(subscriber=request.user,
+                                              subscribe_to=author).exists()
+        return False
 
 
 class UserCreatesSerializer(UserCreateSerializer):
