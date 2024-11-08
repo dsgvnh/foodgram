@@ -1,6 +1,5 @@
 from djoser.serializers import UserCreateSerializer
 from rest_framework import serializers, status
-from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.serializers import ModelSerializer
 
 from .models import Subscribers, User
@@ -31,12 +30,7 @@ class UserCreatesSerializer(UserCreateSerializer):
 
 
 class UserMeSerializer(UserListSerializer):
-    def to_representation(self, instance):
-        request = self.context.get('request')
-        if request is None or request.user.is_anonymous:
-            raise AuthenticationFailed('Учетные данные не были предоставлены.',
-                                       code=status.HTTP_401_UNAUTHORIZED)
-        return super().to_representation(instance)
+    pass
 
 
 class AvatarSerializer(ModelSerializer):
@@ -49,7 +43,7 @@ class AvatarSerializer(ModelSerializer):
 
 class SubscribeSerializer(UserListSerializer):
     recipes = serializers.SerializerMethodField()
-    recipes_count = serializers.SerializerMethodField()
+    recipes_count = serializers.ReadOnlyField(source='recipes.count')
 
     class Meta(UserListSerializer.Meta):
         fields = UserListSerializer.Meta.fields + ('recipes', 'recipes_count')

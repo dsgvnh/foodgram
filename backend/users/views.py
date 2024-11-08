@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
-
+from djoser.views import UserViewSet
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -14,11 +14,18 @@ from .serializers import AvatarSerializer, SubscribeSerializer
 User = get_user_model()
 
 
+class UserMeViewSet(UserViewSet):
+    permission_classes = [IsAuthenticated]
+
+    def me(self, request):
+        return Response(self.get_serializer(request.user).data)
+
+
 class AvatarPutDeleteView(APIView):
     permission_classes = (IsAuthenticated, )
 
     def put(self, request):
-        user = User.objects.get(username=request.user)
+        user = get_object_or_404(User, username=request.user)
         serializer = AvatarSerializer(user, data=request.data)
         if serializer.is_valid(raise_exception=True):
             serializer.save()
@@ -26,7 +33,7 @@ class AvatarPutDeleteView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request):
-        user = User.objects.get(username=request.user)
+        user = get_object_or_404(User, username=request.user)
         if user.avatar:
             user.avatar.delete(save=False)
             user.avatar = None
