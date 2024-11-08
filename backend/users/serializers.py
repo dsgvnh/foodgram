@@ -2,8 +2,9 @@ from djoser.serializers import UserCreateSerializer
 from rest_framework import serializers, status
 from rest_framework.serializers import ModelSerializer
 
-from .models import Subscribers, User
 from api.fields import Base64ImageField
+
+from .models import Subscribers, User
 
 
 class UserListSerializer(ModelSerializer):

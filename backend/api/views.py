@@ -1,8 +1,8 @@
 import io
 
+from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
-from django.db.models import Sum
 
 from django_filters.rest_framework import DjangoFilterBackend
 from reportlab.lib.pagesizes import letter
@@ -20,14 +20,12 @@ from api.constants import (FONT_SIZE, SHOPPING_CART_OFFSET_X,
                            SHOPPING_CART_OFFSET_Y, SHOPPING_CART_X_SIZE)
 from api.filters import IngredientsNameFilter, RecipeFilter
 from api.permissions import IsOwnerOrReadOnly
-
-from recipes.models import (Favorite, Ingredient, Recipes,
-                            Shopping_cart, Tag, RecipesIngredient)
-from recipes.serializers import (FavoriteSerializer, ShopCartSerializer,
-                                 IngredientSerializer, RecipeReadSerializer,
-                                 RecipeSerializer, TagSerializer)
-
 from foodgram.settings import MAIN_HOST
+from recipes.models import (Favorite, Ingredient, Recipes, RecipesIngredient,
+                            Shopping_cart, Tag)
+from recipes.serializers import (FavoriteSerializer, IngredientSerializer,
+                                 RecipeReadSerializer, RecipeSerializer,
+                                 ShopCartSerializer, TagSerializer)
 
 
 class TagsViewSet(ReadOnlyModelViewSet):
@@ -156,7 +154,7 @@ class RecipViewSet(ModelViewSet):
         y_position = height - SHOPPING_CART_OFFSET_Y
         for ingredient in ingredients:
             name = ingredient['ingredient__name']
-            measurement_unit = ingredient['ingredient__measurement_unit'] 
+            measurement_unit = ingredient['ingredient__measurement_unit']
             total_amount = ingredient['total_amount']
             key = f'{name} ({measurement_unit})'
             p.drawString(SHOPPING_CART_X_SIZE, y_position,

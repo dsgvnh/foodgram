@@ -1,10 +1,8 @@
-from django.core.validators import (RegexValidator,
-                                    MinValueValidator,
-                                    MaxValueValidator)
+from django.core.validators import (MaxValueValidator, MinValueValidator,
+                                    RegexValidator)
 
-from .constants import (MIN_VALUE_FOR_VALIDATOR,
-                        MAX_VALUE_FOR_VALIDATOR,
-                        MAX_AMOUNT_VALUE_VALIDATOR)
+from .constants import (MAX_AMOUNT_VALUE_VALIDATOR, MAX_VALUE_FOR_VALIDATOR,
+                        MIN_VALUE_FOR_VALIDATOR)
 
 username_regex_validator = RegexValidator(
     regex=r'^[\w.@+-]+$',
