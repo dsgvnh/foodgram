@@ -141,8 +141,7 @@ class Shopping_cart(models.Model):
         verbose_name='Рецепт')
 
     class Meta:
-        verbose_name = 'Корзина'
-        verbose_name_plural = 'Корзина'
+        verbose_name, verbose_name_plural = 'Корзина', 'Корзина'
         constraints = [
             models.UniqueConstraint(fields=['user', 'recipe'],
                                     name='unique_shop_cart'),

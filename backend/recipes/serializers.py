@@ -1,6 +1,5 @@
 from rest_framework import serializers, status
 
-from api.constants import MIN_VALUE_FOR_VALIDATOR
 from api.fields import Base64ImageField
 from users.serializers import UserListSerializer
 
@@ -168,20 +167,35 @@ class RecipeSerializer(serializers.ModelSerializer):
         return value
 
 
-class FavoriteAndShopCartSerializer(serializers.ModelSerializer):
+class DetailSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+    image = Base64ImageField()
+    cooking_time = serializers.IntegerField()
+
+    class Meta:
+        model = Recipes
+        fields = ('id', 'name', 'image', 'cooking_time')
+
+
+class BaseFavoriteAndShopCartSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField()
 
     class Meta:
-        model = Favorite
         fields = ('id', )
 
     def to_representation(self, instance):
-        return {
-            'id': instance.id,
-            'name': instance.name,
-            'image': str(instance.image),
-            'cooking_time': instance.cooking_time
-        }
+        return DetailSerializer(instance).data
+
+
+class FavoriteSerializer(BaseFavoriteAndShopCartSerializer):
+    class Meta:
+        model = Favorite
+
+
+class ShopCartSerializer(BaseFavoriteAndShopCartSerializer):
+    class Meta:
+        model = Shopping_cart
 
 
 class RecipForSubscribersSerializer(serializers.ModelSerializer):

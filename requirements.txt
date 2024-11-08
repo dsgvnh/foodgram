@@ -5,3 +5,4 @@ djoser==2.2.3
 Pillow
 reportlab
 isort==5.13.2
+python-dotenv==1.0.1 

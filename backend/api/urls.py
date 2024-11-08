@@ -12,10 +12,10 @@ router_v1.register('ingredients', IngredientsViewSet)
 router_v1.register('recipes', RecipViewSet)
 
 urlpatterns = [
+    path('users/subscriptions/', SubscribeListView.as_view()),
     path('', include(router_v1.urls)),
     path('', include('djoser.urls')),
     path('auth/', include('djoser.urls.authtoken')),
     path('users/me/avatar/', AvatarPutDeleteView.as_view()),
-    path('users/subscriptions/', SubscribeListView.as_view()),
     path('users/<int:pk>/subscribe/', SubcribeView.as_view()),
 ]
