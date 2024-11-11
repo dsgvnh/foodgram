@@ -4,7 +4,7 @@ from api.fields import Base64ImageField
 from users.serializers import UserListSerializer
 
 from .models import (Favorite, Ingredient, Recipes, RecipesIngredient,
-                     Shopping_cart, Tag)
+                     ShoppingCart, Tag)
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -195,7 +195,7 @@ class FavoriteSerializer(BaseFavoriteAndShopCartSerializer):
 
 class ShopCartSerializer(BaseFavoriteAndShopCartSerializer):
     class Meta:
-        model = Shopping_cart
+        model = ShoppingCart
 
 
 class RecipForSubscribersSerializer(serializers.ModelSerializer):

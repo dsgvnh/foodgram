@@ -22,7 +22,7 @@ from api.filters import IngredientsNameFilter, RecipeFilter
 from api.permissions import IsOwnerOrReadOnly
 from foodgram.settings import MAIN_HOST
 from recipes.models import (Favorite, Ingredient, Recipes, RecipesIngredient,
-                            Shopping_cart, Tag)
+                            ShoppingCart, Tag)
 from recipes.serializers import (FavoriteSerializer, IngredientSerializer,
                                  RecipeReadSerializer, RecipeSerializer,
                                  ShopCartSerializer, TagSerializer)
@@ -121,12 +121,12 @@ class RecipViewSet(ModelViewSet):
         serializer_class=ShopCartSerializer, url_path='shopping_cart'
     )
     def shopping_cart(self, request, pk):
-        return self.post_request_processing(request, Shopping_cart,
+        return self.post_request_processing(request, ShoppingCart,
                                             ShopCartSerializer, pk)
 
     @shopping_cart.mapping.delete
     def shopping_cart_delete(self, request, pk):
-        return self.delete_request_processing(request, Shopping_cart,
+        return self.delete_request_processing(request, ShoppingCart,
                                               ShopCartSerializer, pk)
 
     @action(

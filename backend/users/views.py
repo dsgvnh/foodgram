@@ -26,15 +26,14 @@ class AvatarPutDeleteView(APIView):
     permission_classes = (IsAuthenticated, )
 
     def put(self, request):
-        user = get_object_or_404(User, username=request.user)
+        user = request.user
         serializer = AvatarSerializer(user, data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def delete(self, request):
-        user = get_object_or_404(User, username=request.user)
+        user = request.user
         if user.avatar:
             user.avatar.delete(save=False)
             user.avatar = None
@@ -77,7 +76,7 @@ class SubscribeListView(APIView):
     def get(self, request):
         paginator = self.pagination_class()
         user = request.user
-        subscriptions = Subscribers.objects.filter(subscriber=user)
+        subscriptions = user.subscriber.all()
         pag_subs = paginator.paginate_queryset(subscriptions, request)
         subscribed_users = [subscription.subscribe_to
                             for subscription in pag_subs]

@@ -18,8 +18,8 @@ class UserListSerializer(ModelSerializer):
     def get_is_subscribed(self, author):
         request = self.context.get('request')
         if request and not request.user.is_anonymous:
-            return Subscribers.objects.filter(subscriber=request.user,
-                                              subscribe_to=author).exists()
+            return author.subscriber.filter(subscriber=request.user,
+                                            subscribe_to=author).exists()
         return False
 
 
@@ -75,6 +75,3 @@ class SubscribeSerializer(UserListSerializer):
                                                    many=True,
                                                    read_only=True)
         return serializer.data
-
-    def get_recipes_count(self, author):
-        return author.recipes.count()
