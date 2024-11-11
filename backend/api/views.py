@@ -23,9 +23,9 @@ from api.permissions import IsOwnerOrReadOnly
 from foodgram.settings import MAIN_HOST
 from recipes.models import (Favorite, Ingredient, Recipes, RecipesIngredient,
                             ShoppingCart, Tag)
-from recipes.serializers import (FavoriteSerializer, IngredientSerializer,
-                                 RecipeReadSerializer, RecipeSerializer,
-                                 ShopCartSerializer, TagSerializer)
+from .serializers import (FavoriteSerializer, IngredientSerializer,
+                          RecipeReadSerializer, RecipeSerializer,
+                          ShopCartSerializer, TagSerializer)
 
 
 class TagsViewSet(ReadOnlyModelViewSet):
@@ -78,8 +78,9 @@ class RecipViewSet(ModelViewSet):
     def delete_request_processing(self, request, model, serializer, pk):
         recipe = get_object_or_404(Recipes, id=pk)
         serializer = serializer(recipe)
-        if recipe:
-            model.objects.filter(user=request.user, recipe=recipe).delete()
+        deleted, _ = model.objects.filter(user=request.user, recipe=recipe
+                                          ).delete()
+        if deleted > 0:
             return Response(
                 {'Сообщение': f'Рецепт удален из {model._meta.verbose_name}!'},
                 status=status.HTTP_204_NO_CONTENT)

@@ -65,7 +65,7 @@ class SubscribeSerializer(UserListSerializer):
         return data
 
     def get_recipes(self, author):
-        from recipes.serializers import RecipForSubscribersSerializer
+        from api.serializers import RecipForSubscribersSerializer
         recipes = author.recipes.all()
         request = self.context['request']
         limit = request.GET.get('recipes_limit')

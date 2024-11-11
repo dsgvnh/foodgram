@@ -3,8 +3,8 @@ from rest_framework import serializers, status
 from api.fields import Base64ImageField
 from users.serializers import UserListSerializer
 
-from .models import (Favorite, Ingredient, Recipes, RecipesIngredient,
-                     ShoppingCart, Tag)
+from recipes.models import (Favorite, Ingredient, Recipes, RecipesIngredient,
+                            ShoppingCart, Tag)
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -154,16 +154,15 @@ class RecipeSerializer(serializers.ModelSerializer):
         if not value:
             raise serializers.ValidationError(
                 'Ингредиенты не могут быть пустыми',
-                status.HTTP_400_BAD_REQUEST)
-        ingredients_set = set()
-        for item in value:
-            ingredient = (item['ingredient'], item['amount'])
-            if ingredient in ingredients_set:
-                raise serializers.ValidationError(
-                    'Ингредиенты должны быть уникальными',
-                    status.HTTP_400_BAD_REQUEST
-                )
-            ingredients_set.add(ingredient)
+                status.HTTP_400_BAD_REQUEST
+            )
+        ingredients_set = {(item['ingredient'],
+                            item['amount']) for item in value}
+        if len(ingredients_set) != len(value):
+            raise serializers.ValidationError(
+                'Ингредиенты должны быть уникальными',
+                status.HTTP_400_BAD_REQUEST
+            )
         return value
 
 
@@ -189,7 +188,7 @@ class BaseFavoriteAndShopCartSerializer(serializers.ModelSerializer):
 
 
 class FavoriteSerializer(BaseFavoriteAndShopCartSerializer):
-    class Meta:
+    class Meta(BaseFavoriteAndShopCartSerializer.Meta):
         model = Favorite
 
 
