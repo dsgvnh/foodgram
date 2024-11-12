@@ -93,6 +93,13 @@ class RecipeSerializer(serializers.ModelSerializer):
                   'name', 'image', 'text',
                   'cooking_time')
 
+    def recipes_bulk_create(self, recipe, ingredients):
+        RecipesIngredient.objects.bulk_create(RecipesIngredient(
+            recipe=recipe,
+            ingredient=ingredient.get('ingredient'),
+            amount=ingredient.get('amount'),)
+            for ingredient in ingredients)
+
     def create(self, validated_data):
         ingredients = validated_data.pop('recipe_ingredients', [])
         tags = validated_data.pop('tags', [])
@@ -103,12 +110,7 @@ class RecipeSerializer(serializers.ModelSerializer):
             text=validated_data.pop('text'),
             cooking_time=validated_data.pop('cooking_time'), )
         recipe.tags.set(tags)
-        RecipesIngredient.objects.bulk_create(RecipesIngredient(
-            recipe=recipe,
-            ingredient=ingredient.get('ingredient'),
-            amount=ingredient.get('amount'),)
-            for ingredient in ingredients
-        )
+        self.recipes_bulk_create(recipe, ingredients)
         return recipe
 
     def update(self, instance, validated_data):
@@ -117,13 +119,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         ingredients = validated_data.pop('recipe_ingredients', [])
         tags = validated_data.pop('tags', [])
         instance.tags.set(tags)
-        RecipesIngredient.objects.bulk_create(
-            RecipesIngredient(
-                recipe=instance,
-                ingredient=ingredient.get('ingredient'),
-                amount=ingredient.get('amount'),
-            ) for ingredient in ingredients
-        )
+        self.recipes_bulk_create(instance, ingredients)
         return super().update(instance, validated_data)
 
     def to_representation(self, instance):
