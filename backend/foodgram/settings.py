@@ -13,7 +13,7 @@ DEBUG = True
 
 MAIN_HOST = os.getenv('MAIN_HOST')
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['89.169.166.244', '127.0.0.1', 'localhost']
 
 AUTH_USER_MODEL = 'users.User'
 
@@ -130,5 +130,6 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'collected_static'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
