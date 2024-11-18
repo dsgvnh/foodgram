@@ -9,11 +9,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = 'django-insecure-f$myo8-q5w-y@2#n&ae(gwsdi7ke%1kc_9(^mr)+6mxn(+(*z)'
 
-DEBUG = True
+DEBUG = False
 
 MAIN_HOST = os.getenv('MAIN_HOST')
 
-ALLOWED_HOSTS = ['89.169.166.244', '127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['fooooodgram.sytes.net', '89.169.166.244', '127.0.0.1', 'localhost']
 
 AUTH_USER_MODEL = 'users.User'
 
