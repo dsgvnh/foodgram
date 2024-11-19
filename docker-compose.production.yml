@@ -2,6 +2,7 @@ version: '3'
 volumes:
   pg_data:
   static:
+  media:
 services:
   db:
     image: postgres:13.10
@@ -13,6 +14,7 @@ services:
     env_file: ./backend/.env
     volumes:
       - static:/backend_static
+      - media:/app/media
     depends_on:
       - db
   frontend:
@@ -25,5 +27,6 @@ services:
     image: dgnsvh/foodgram_gateway
     volumes:
       - static:/staticfiles/
+      - media:/media
     ports:
       - 8080:80
