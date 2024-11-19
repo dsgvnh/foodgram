@@ -22,7 +22,7 @@ services:
     volumes:
       - static:/frontend_static
   gateway:
-    build: ./infra/
+    image: ./infra/
     volumes:
       - static:/staticfiles/
     ports:
