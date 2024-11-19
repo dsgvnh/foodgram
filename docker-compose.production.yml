@@ -9,7 +9,7 @@ services:
     volumes:
       - pg_data:/var/lib/postgresql/data
   backend:
-    build: ./backend/
+    image: dgnsvh/foodgram_backend
     env_file: ./backend/.env
     volumes:
       - static:/backend_static
@@ -17,12 +17,12 @@ services:
       - db
   frontend:
     env_file: ./backend/.env
-    build: ./frontend/
+    image: dgnsvh/foodgram_frontend
     command: cp -r /app/build/. /static/
     volumes:
       - static:/frontend_static
   gateway:
-    image: ./infra/
+    image: dgnsvh/foodgram_gateway
     volumes:
       - static:/staticfiles/
     ports:
