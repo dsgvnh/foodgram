@@ -13,7 +13,7 @@ DEBUG = True
 
 MAIN_HOST = os.getenv('MAIN_HOST')
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['fooooodgram.sytes.net', '127.0.0.1', 'localhost', ]
 
 AUTH_USER_MODEL = 'users.User'
 
