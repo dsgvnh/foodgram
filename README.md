@@ -66,11 +66,11 @@ SECRET_KEY = *django_secret_key*
 DEBUG = True
 ALLOWED_HOSTS = ваш_домен,127.0.0.1,localhost,
 ```
-Создайте администратора сайта
-```sudo docker compose -f docker-compose.production.yml exec backend python manage.py createsuperuser```
-
 Запустите docker-compose
 ```sudo docker compose -f docker-compose.production.yml up -d```
+
+Создайте администратора сайта
+```sudo docker compose -f docker-compose.production.yml exec backend python manage.py createsuperuser```
 
 ## Автор проекта:
 
