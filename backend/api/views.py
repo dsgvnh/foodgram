@@ -20,7 +20,6 @@ from api.constants import (FONT_SIZE, SHOPPING_CART_OFFSET_X,
                            SHOPPING_CART_OFFSET_Y, SHOPPING_CART_X_SIZE)
 from api.filters import IngredientsNameFilter, RecipeFilter
 from api.permissions import IsOwnerOrReadOnly
-from foodgram.settings import MAIN_HOST
 from recipes.models import (Favorite, Ingredient, Recipes, RecipesIngredient,
                             ShoppingCart, Tag)
 
@@ -98,7 +97,7 @@ class RecipViewSet(ModelViewSet):
     )
     def get_link(self, request, pk):
         recipe = get_object_or_404(Recipes, id=pk)
-        shortlink = f'http://{MAIN_HOST}/s/{recipe.id}'
+        shortlink = request.build_absolute_uri(f'/s/{recipe.id}')
         return Response({'short-link': shortlink}, status=status.HTTP_200_OK)
 
     @action(
