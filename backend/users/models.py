@@ -27,9 +27,6 @@ class User(AbstractUser):
     class Meta:
         verbose_name, verbose_name_plural = 'Пользователь', 'Пользователи'
 
-    def __str__(self) -> str:
-        return self.username
-
 
 class Subscribers(models.Model):
     subscriber = models.ForeignKey(

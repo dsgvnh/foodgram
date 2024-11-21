@@ -10,7 +10,8 @@ from rest_framework.views import APIView
 from api.pagination import DefaultPagination
 
 from .models import Subscribers
-from .serializers import AvatarSerializer, SubscribeSerializer
+from .serializers import (AvatarSerializer, SubscriberListSerializer,
+                          SubscribeSerializer)
 
 User = get_user_model()
 
@@ -49,10 +50,13 @@ class SubcribeView(APIView):
     def post(self, request, pk):
         user = request.user
         subscribe_to = get_object_or_404(User, id=pk)
-        serializer = SubscribeSerializer(subscribe_to, data=request.data,
+        if user == subscribe_to:
+            return Response({'Ошибка': 'Нельзя подписаться на себя!'},
+                            status=status.HTTP_400_BAD_REQUEST)
+        serializer = SubscribeSerializer(data={'subscribe_to': subscribe_to},
                                          context={'request': request})
         serializer.is_valid(raise_exception=True)
-        Subscribers.objects.create(subscriber=user, subscribe_to=subscribe_to)
+        serializer.save(subscriber=user)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def delete(self, request, pk):
@@ -80,6 +84,6 @@ class SubscribeListView(APIView):
         pag_subs = paginator.paginate_queryset(subscriptions, request)
         subscribed_users = [subscription.subscribe_to
                             for subscription in pag_subs]
-        serializer = SubscribeSerializer(subscribed_users, many=True,
-                                         context={'request': request})
+        serializer = SubscriberListSerializer(subscribed_users, many=True,
+                                              context={'request': request})
         return paginator.get_paginated_response(serializer.data)
