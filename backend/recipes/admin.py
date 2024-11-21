@@ -14,7 +14,13 @@ class IngredientAdmin(admin.ModelAdmin):
     search_fields = ('name', 'measurement_unit')
 
 
+class RecipesIngredientInline(admin.TabularInline):
+    model = RecipesIngredient
+    extra = 1
+
+
 class RecipesAdmin(admin.ModelAdmin):
+    inlines = [RecipesIngredientInline]
     list_display = ('name', 'author', 'sum_favorites')
     search_fields = ('name',)
     list_filter = ('tags',)

@@ -3,7 +3,8 @@ from django.db import models
 
 from api.constants import (MAX_USER_EMAIL_LENGTH, MAX_USER_FIRSTNAME_LENGTH,
                            MAX_USER_LASTNAME_LENGTH, MAX_USER_USERNAME_LENGTH)
-from api.validators import username_regex_validator
+
+from .validators import username_regex_validator
 
 
 class User(AbstractUser):

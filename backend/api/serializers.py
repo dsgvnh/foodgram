@@ -151,13 +151,15 @@ class RecipeSerializer(serializers.ModelSerializer):
                 'Ингредиенты не могут быть пустыми',
                 status.HTTP_400_BAD_REQUEST
             )
-        ingredients_set = {(item['ingredient'],
-                            item['amount']) for item in value}
-        if len(ingredients_set) != len(value):
-            raise serializers.ValidationError(
-                'Ингредиенты должны быть уникальными',
-                status.HTTP_400_BAD_REQUEST
-            )
+        ingredients_set = set()
+        for item in value:
+            ingredient = item['ingredient']
+            if ingredient in ingredients_set:
+                raise serializers.ValidationError(
+                    f'Ингредиент "{ingredient}" уже добавлен в рецепт.',
+                    status.HTTP_400_BAD_REQUEST
+                )
+            ingredients_set.add(ingredient)
         return value
 
 

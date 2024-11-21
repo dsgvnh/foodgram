@@ -1,12 +1,12 @@
 from django.db import models
 
-from api.validators import (amount_validator, cooking_time_validator,
-                            tag_regex_validator)
 from users.models import User
 
 from .constants import (MAX_INGREDIENT_MEASURE_UNIT_LENGTH,
                         MAX_INGREDIENT_NAME_LENGTH, MAX_RECIPE_NAME_LENGTH,
                         MAX_TAG_NAME_LENGTH, MAX_TAG_SLUG_LENGTH)
+from .validators import (amount_validator, cooking_time_validator,
+                         tag_regex_validator)
 
 
 class Tag(models.Model):

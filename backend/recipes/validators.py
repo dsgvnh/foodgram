@@ -4,11 +4,6 @@ from django.core.validators import (MaxValueValidator, MinValueValidator,
 from .constants import (MAX_AMOUNT_VALUE_VALIDATOR, MAX_VALUE_FOR_VALIDATOR,
                         MIN_VALUE_FOR_VALIDATOR)
 
-username_regex_validator = RegexValidator(
-    regex=r'^[\w.@+-]+$',
-    message='Неверный формат имени пользователя'
-)
-
 tag_regex_validator = RegexValidator(
     regex=r'^[-a-zA-Z0-9_]+$',
     message='Неверный формат названия slug'
