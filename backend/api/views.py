@@ -149,7 +149,7 @@ class RecipViewSet(ModelViewSet):
         p = canvas.Canvas(buffer, pagesize=letter)
         width, height = letter
         pdfmetrics.registerFont(TTFont('DejaVuSans', 'DejaVuSans.ttf'))
-        p.setFont('Tahoma', FONT_SIZE)
+        p.setFont('DejaVuSans', FONT_SIZE)
         p.drawString(SHOPPING_CART_X_SIZE, height - SHOPPING_CART_OFFSET_X,
                      "Список покупок:")
         y_position = height - SHOPPING_CART_OFFSET_Y
