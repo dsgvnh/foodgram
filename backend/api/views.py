@@ -2,7 +2,8 @@ import io
 
 from django.db.models import Sum
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
+from django.urls import reverse
 
 from django_filters.rest_framework import DjangoFilterBackend
 from reportlab.lib.pagesizes import letter
@@ -57,8 +58,8 @@ class RecipViewSet(ModelViewSet):
 
     def show_short_link(self, request, pk):
         recipe = get_object_or_404(Recipes, id=pk)
-        serializer = RecipeReadSerializer(recipe)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        recipe_url = reverse('api:recipes-detail', args=[recipe.id])
+        return redirect(recipe_url)
 
     def get_serializer_class(self):
         if self.action in ('list', 'retrieve'):
