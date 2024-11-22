@@ -55,6 +55,11 @@ class RecipViewSet(ModelViewSet):
     filter_backends = (DjangoFilterBackend, )
     filterset_class = RecipeFilter
 
+    def show_short_link(self, request, pk):
+        recipe = get_object_or_404(Recipes, id=pk)
+        serializer = RecipeReadSerializer(recipe)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
     def get_serializer_class(self):
         if self.action in ('list', 'retrieve'):
             return RecipeReadSerializer
