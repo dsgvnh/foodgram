@@ -57,9 +57,7 @@ class RecipViewSet(ModelViewSet):
     filterset_class = RecipeFilter
 
     def show_short_link(self, request, pk):
-        recipe = get_object_or_404(Recipes, id=pk)
-        recipe_url = reverse('api:recipes-detail', args=[recipe.id])
-        return redirect(recipe_url)
+        return redirect(request.build_absolute_uri(f'/recipes/{pk}/'))
 
     def get_serializer_class(self):
         if self.action in ('list', 'retrieve'):
