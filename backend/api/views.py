@@ -148,10 +148,7 @@ class RecipViewSet(ModelViewSet):
         buffer = io.BytesIO()
         p = canvas.Canvas(buffer, pagesize=letter)
         width, height = letter
-        pdfmetrics.registerFont(
-            TTFont('Tahoma',
-                   '/usr/share/fonts/truetype/dejavu/tahoma.ttf')
-        )
+        pdfmetrics.registerFont(TTFont('DejaVuSans', 'DejaVuSans.ttf'))
         p.setFont('Tahoma', FONT_SIZE)
         p.drawString(SHOPPING_CART_X_SIZE, height - SHOPPING_CART_OFFSET_X,
                      "Список покупок:")
